@@ -68,13 +68,16 @@ end
 ------------------------------------------------------------------------------------------
 local function getPercentLipo(lipoVoltage,nbCells)
 	-- Table de % en fonction de 420 - 300 soit 120 valeurs à définir
-	local tab = {0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,10,11,12,13,14,15,16,17,18,19,20,22,24,26,28,30,32,35,38,40,42,45,48,50,52,55,58,60,62,64,66,68,70,72,74,76,78,80,81,82,83,84,85,85,86,86,87,88,89,89,90,91,92,93,94,95,96,97,98,99,100}
+	--local array = {0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,10,11,12,13,14,15,16,17,18,19,20,22,24,26,28,30,32,35,38,40,42,45,48,50,52,55,58,60,62,64,66,68,70,72,74,76,78,80,81,82,83,84,85,85,86,86,87,88,89,89,90,91,92,93,94,95,96,97,98,99,100}
+	-- Tableau FrSky
+	local array	= {0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,7,7,7,8,9,10,11,12,13,14,15,18,19,20,21,22,23,24,25,26,27,28,31,32,34,36,39,42,45,49,52,55,57,59,62,63,65,68,72,74,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100}
+	
 	if nbCells > 0 then
 		local voltCell = (lipoVoltage * 100) / nbCells
 		local delta = math.floor(voltCell - 300)
 		if delta > 120 then delta = 120	end
 		if delta < 1 then delta = 1 end
-		return tab[delta]
+		return array[delta]
 	end
 end
 
@@ -82,9 +85,9 @@ end
 -- Définition de la couleur en fonction du pourcentage de la batterie
 ------------------------------------------------------------------------------------------
 local function getPercentColor(percent)
-       g = math.floor(0xDF * percent / 100)
-       r = 0xDF - g
-       return r, g, 0
+       green = math.floor(0xDF * percent / 100)
+       red = 0xDF - green
+       return red, green, 0
  end
 
 ------------------------------------------------------------------------------------------
@@ -99,10 +102,10 @@ local function drawGauge(center_x, center_y, radius, thickness, anglePercent, pe
 	-- Affiche % dans le cercle si TRUE sinon la tension
 	if displayPercent then
 		lcd.font(field[widget.screen][15])
-		lcd.drawText(center_x+3, center_y-10,percent.."%", CENTERED)
+		lcd.drawText(center_x+3, center_y-10, percent.."%", CENTERED)
 	else
 		lcd.font(field[widget.screen][16])
-		lcd.drawText(center_x+3, center_y-7,voltage, CENTERED)	
+		lcd.drawText(center_x+3, center_y-7, voltage, CENTERED)	
 	end
 end
 
@@ -140,7 +143,7 @@ local function paint(widget)
 				--local percentCell = getPercentLipo(3.86,1)									-- Pour les tests
 				local percentCell = getPercentLipo(widget.value:value(OPTION_CELL_INDEX(cell)),1)
 				local angleCell = percentCell/100*360			
-				if xCell >= field[widget.screen][12] then 										-- COmparaison avec la largeur de l'écran pour passer à la ligne
+				if xCell >= field[widget.screen][12] then 										-- Comparaison avec la largeur de l'écran pour passer à la ligne
 					xCell = field[widget.screen][5]												-- On test si la position de X est supérieur à la largeur de l'écran
 					yCell = yCell + field[widget.screen][11] 									-- On décale de DyCell vers le bas pour une deuxième ligne
 				end
