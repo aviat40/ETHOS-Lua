@@ -1,18 +1,20 @@
 -- ##########################################################################################################
 -- #                                                                                                        #
--- # FLVSS lua for ETHOS V1.1.0 or above                                                                    #
+-- # FLVSS / MLVSS lua for ETHOS V1.1.0 or above 															#
+-- #																										#
+-- # IMPORTANT! Update the MLVSS sensor to the latest firmware from frsky-rc.com web page before use        #
 -- #                                                                                                        #
 -- # hobby-rc.freeboxos.fr (2022)                                                                           #
 -- #                                                                                                        #
 -- ##########################################################################################################
 
 local version = "1.0"
-local translations = {fr="Lua FLVSS", en="FLVSS Lua", de="FLVSS lua", es=" Es"}
-local text = {en=" Cells", fr=" Eléments", de=" De", es=" Es"}
-local text1 = {en="No FLVSS", fr="Pas de FLVSS", de=" De", es=" Es"}
-local text2 = {en="Text Color", fr="Couleur Texte", de="Text Farbe", es=" Es"}
-local text3 = {en="Lipo Sensor", fr="Capteur Lipo", de="Lipo Sensor", es=" Es"}
-local text4 = {en="Desactivate Title", fr="Désactiver le titre", de="Titel deaktivieren", es=" Es"}
+local translations = {fr="Lua MLVSS/FLVSS", en="MLVSS/FLVSS Lua", de="MLVSS/FLVSS lua", es=" Es", no="MLVSS/FLVSS Luascript"}
+local text = {en=" Cells", fr=" Eléments", de=" De", es=" Es", no=" Celle(r)"}
+local text1 = {en="No Sensor", fr="Pas de capteur", de="De", es=" Es", no="Ingen Sensor"}
+local text2 = {en="Text Color", fr="Couleur Texte", de="Text Farbe", es=" Es", no="Tekstfarge"}
+local text3 = {en="Lipo Sensor", fr="Capteur Lipo", de="Lipo Sensor", es=" Es", no="LiPo-sensor"}
+local text4 = {en="Desactivate Title", fr="Désactiver le titre", de="Titel deaktivieren", es=" Es", no="Skru av'Tittel'"}
 local locale = system.getLocale()
 
 --				 
@@ -68,9 +70,9 @@ end
 ------------------------------------------------------------------------------------------
 local function getPercentLipo(lipoVoltage,nbCells)
 	-- Table de % en fonction de 420 - 300 soit 120 valeurs à définir
-	--local array = {0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,10,11,12,13,14,15,16,17,18,19,20,22,24,26,28,30,32,35,38,40,42,45,48,50,52,55,58,60,62,64,66,68,70,72,74,76,78,80,81,82,83,84,85,85,86,86,87,88,89,89,90,91,92,93,94,95,96,97,98,99,100}
+	local array = {0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,10,11,12,13,14,15,16,17,18,19,20,22,24,26,28,30,32,35,38,40,42,45,48,50,52,55,58,60,62,64,66,68,70,72,74,76,78,80,81,82,83,84,85,85,86,86,87,88,89,89,90,91,92,93,94,95,96,97,98,99,100}
 	-- Tableau FrSky
-	local array	= {0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,7,7,7,8,9,10,11,12,13,14,15,18,19,20,21,22,23,24,25,26,27,28,31,32,34,36,39,42,45,49,52,55,57,59,62,63,65,68,72,74,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100}
+	--local array	= {0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,7,7,7,8,9,10,11,12,13,14,15,18,19,20,21,22,23,24,25,26,27,28,31,32,34,36,39,42,45,49,52,55,57,59,62,63,65,68,72,74,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100}
 	
 	if nbCells > 0 then
 		local voltCell = (lipoVoltage * 100) / nbCells
@@ -125,7 +127,7 @@ local function paint(widget)
 		local xText = field[widget.screen][1] + field[widget.screen][3] + field[widget.screen][4] + 5
 		local yText = field[widget.screen][2]
 		lcd.font(field[widget.screen][14])														-- Taille de la police fontNbCell
-		lcd.drawText(xText, yText-30 , widget.value:stringValue(OPTION_CELL_COUNT)..text[locale] or text10["en"])
+		lcd.drawText(xText, yText-30 , widget.value:stringValue(OPTION_CELL_COUNT)..text[locale] or text["en"])
 		-- Affichage du nom du capteur Lipo
 		lcd.drawText(field[widget.screen][17],field[widget.screen][18],widget.value:name())
 		
