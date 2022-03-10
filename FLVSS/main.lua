@@ -9,15 +9,16 @@
 -- ##########################################################################################################
 
 local version = "1.0"
-local translations = {fr="Lua MLVSS/FLVSS", en="MLVSS/FLVSS Lua", de="MLVSS/FLVSS lua", es=" Es", no="MLVSS/FLVSS Luascript"}
-local text = {en=" Cells", fr=" Eléments", de=" De", es=" Es", no=" Celle(r)"}
-local text1 = {en="No Sensor", fr="Pas de capteur", de="De", es=" Es", no="Ingen Sensor"}
-local text2 = {en="Text Color", fr="Couleur Texte", de="Text Farbe", es=" Es", no="Tekstfarge"}
-local text3 = {en="Lipo Sensor", fr="Capteur Lipo", de="Lipo Sensor", es=" Es", no="LiPo-sensor"}
-local text4 = {en="Desactivate Title", fr="Désactiver le titre", de="Titel deaktivieren", es=" Es", no="Skru av'Tittel'"}
+local translations = {fr="Lua MLVSS/FLVSS", en="MLVSS/FLVSS Lua", de="MLVSS/FLVSS lua", es=" Es", no="MLVSS/FLVSS Luascript", nl="MLVSS/FLVSS"}
+local text = {en=" Cells", fr=" Eléments", de=" Zellen", es=" Es", no=" Celle(r)", nl=" Cel(len)"}
+local text1 = {en="No Sensor", fr="Pas de capteur", de=" kein Sensor", es=" Es", no="Ingen Sensor", nl="Geen Sensor"}
+local text2 = {en="Text Color", fr="Couleur Texte", de="Text Farbe", es=" Es", no="Tekstfarge", nl="Tekstkleur"}
+local text3 = {en="Lipo Sensor", fr="Capteur Lipo", de="Lipo Sensor", es=" Es", no="LiPo-sensor", nl="Lipo Sensor"}
+local text4 = {en="Deactivate Title", fr="Désactiver le titre", de="Titel deaktivieren", es=" Es", no="Skru av'Tittel'", nl="Deactiveer Titel"}
 local locale = system.getLocale()
 
---				 
+
+				 
 local field = {
 --{xLipo,yLipo,rLipo,thickLipo,xCell,yCell,rCell,thickCell,Cell,DxCell,DyCell,screenWidth,screenHeight,fontNbCell,fontLipo,fontCell,xName,yName}
 	{45, 70, 35, 10, 210, 40, 25, 8, true, 70, 70, 388, 154, FONT_S, FONT_L_BOLD, FONT_XS, 100, 120},	-- Taille écran 388 * 132
