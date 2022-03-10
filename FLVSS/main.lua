@@ -62,7 +62,7 @@ local function getScreenSize()
 	elseif 	width == 300 and height == 88 	then return 8 
 	else
 		lcd.font(FONT_STD)
-		lcd.drawText(width/2, height/2, text4[locale] or text1["en"], CENTERED)					--Message "Désactiver le titre"
+		lcd.drawText(width/2, height/2, text4[locale] or text4["en"], CENTERED)					--Message "Désactiver le titre"
 	end
 end
 
