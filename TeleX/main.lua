@@ -10,6 +10,7 @@
 
 -- Path to pictures on SD-CARD
 local imagePath = "/scripts/Telex/bitmaps/"
+local version = "1.0"
 
 local locale = system.getLocale()
 
@@ -33,6 +34,10 @@ local function name(widget)
     return translations[locale] or tranlations["en"]
 end
 
+local function menu(widget)
+	return{{"TeleX v"..version, function() end}}
+end
+
 local function create()
 	flag_haptic = false
 	switch = false
@@ -46,7 +51,7 @@ local function create()
 			}
 end
 
-function draw_status(x, y, status)
+function drawStatus(x, y, status)
 	local msg_table_xicoy = {
 		[0]  = "HighTemp",
 		[1]  = "Trim Low",
@@ -88,8 +93,8 @@ function draw_status(x, y, status)
 	}	
 	status_str = msg_table_xicoy[tonumber(status)]
    
-	lcd.drawText(x, y, status_str, CENTERED)
-	
+	--lcd.drawText(x, y, status_str, CENTERED)
+	lcd.drawText(x, y, "NO STATUS", CENTERED)
 end
 
 local function getPercentColor(percent_col, fuel_alarm, tank_capacity)
@@ -112,7 +117,7 @@ local function play(widget)
 end
 
 
-local function drawgauge_v(widget)
+local function drawGaugeV(widget)
 	
 	box_top = 5
 	box_height = h - box_top - 5
@@ -147,7 +152,7 @@ local function drawgauge_v(widget)
 	end	
 end
 
-local function drawgauge_h(widget)
+local function drawGaugeH(widget)
 	
 	box_top = 40
 	box_height = h - box_top - 5
@@ -186,10 +191,7 @@ local function paint(widget)
 	
 	w, h = lcd.getWindowSize()
 	lcd.color(widget.common_data.color_text)
-	
 	if (w == 388) and (h == 316) then
-	
-		turbine_logo = lcd.loadBitmap(imagePath.."logo1.png")
 		-- Mask
 		lcd.color(widget.common_data.color_mask)
 		lcd.drawBitmap(120, 2, turbine_logo, 100, 50)
@@ -201,7 +203,8 @@ local function paint(widget)
 		lcd.drawMask(150, 205, mask_thro)
 		lcd.drawMask(140, 260, mask_fuel)
 
-		-- Datas Turbine	
+		-- Datas Turbine
+		lcd.color(widget.common_data.color_text)
 		lcd.font(FONT_L)
 		
 		if widget.value_RPM1 ~= nil then
@@ -233,7 +236,7 @@ local function paint(widget)
 		
 		-- Turbine Status
 		lcd.font(FONT_L_BOLD)
-		draw_status( 130, 80, widget.value_STAT)
+		drawStatus( 130, 80, widget.value_STAT)
 		-- Fuel Quantity
 		if (fuel_remaining < widget.common_data.fuel_alarm) then
 			lcd.color(RED)
@@ -241,7 +244,7 @@ local function paint(widget)
 		lcd.font(FONT_XL)
 		lcd.drawNumber(190,260, fuel_remaining,UNIT_MILLILITER)
 		-- Fuel Gauge
-		drawgauge_v(widget)
+		drawGaugeV(widget)
 	
 	elseif (w == 300) and (h == 88) then
 		-- Fuel Quantity
@@ -250,7 +253,7 @@ local function paint(widget)
 		end
 		lcd.font(FONT_XL)
 		lcd.drawNumber(w/2,0, fuel_remaining,UNIT_MILLILITER,0, CENTERED)
-		drawgauge_h(widget)
+		drawGaugeH(widget)
 	
 	elseif (w == 388) and ( h == 294 ) then			-- thickness of title bar = 22 (280-22)=258
 		lcd.font(FONT_STD)
@@ -264,15 +267,15 @@ end
 
 local function wakeup(widget)	
 	
-	sensor_EGTC = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4400})
-	sensor_RPM1 = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4401})	
-	sensor_THRT = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4402})
-	sensor_VBAT = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4403})
-	sensor_PUMP = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4404})
-	sensor_FUEL = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4405})
-	sensor_STAT = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4406})
-	sensor_RPM2 = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4414})
-	sensor_TEMP = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4415})
+	local sensor_EGTC = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4400})
+	local sensor_RPM1 = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4401})	
+	local sensor_THRT = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4402})
+	local sensor_VBAT = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4403})
+	local sensor_PUMP = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4404})
+	local sensor_FUEL = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4405})
+	local sensor_STAT = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4406})
+	local sensor_RPM2 = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4414})
+	local sensor_TEMP = system.getSource({category=CATEGORY_TELEMETRY, appId=0x4415})
 	
 	local newValue_VBAT = nil
 	local newValue_EGTC = nil
@@ -285,6 +288,7 @@ local function wakeup(widget)
 	local newValue_FUEL = nil
 		
 	-- VBAT Turbine
+	--widget.value_VBAT = "82"
 	if sensor_VBAT ~= nil then
 		newValue_VBAT = sensor_VBAT:stringValue()
 	end
@@ -343,6 +347,7 @@ local function wakeup(widget)
 		end
 	end
 	-- Fuel
+	--widget.value_FUEL = "70"
 	if sensor_FUEL ~= nil then
 		newValue_FUEL = sensor_FUEL:stringValue()
 		if newValue_FUEL == "0" then
@@ -351,7 +356,6 @@ local function wakeup(widget)
 			widget.value_FUEL = newValue_FUEL
 		end
 	end
-	
 	percent = tonumber(widget.value_FUEL)
 	fuel_remaining = math.floor((percent * widget.common_data.tank_capacity ) / 100)
 	lcd.invalidate()
@@ -424,7 +428,8 @@ local function init()
 	mask_pump = lcd.loadMask(imagePath.."mask_pump.png")
 	mask_thro = lcd.loadMask(imagePath.."mask_thro.png")
 	mask_fuel = lcd.loadMask(imagePath.."mask_fuel.png")
-	system.registerWidget({key="telex", name=name, create=create, paint=paint, configure=configure, wakeup=wakeup, read=read, write=write})
+	turbine_logo = lcd.loadBitmap(imagePath.."logo1.png")
+	system.registerWidget({key="telex", name=name, create=create, paint=paint, configure=configure, wakeup=wakeup, menu=menu, read=read, write=write})
 end
 
 return {init=init}
