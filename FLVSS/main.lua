@@ -8,16 +8,21 @@
 -- #                                                                                                        #
 -- ##########################################################################################################
 
-local version = "1.0"
-local translations = {fr="Lua MLVSS/FLVSS", en="MLVSS/FLVSS Lua", de="MLVSS/FLVSS lua", es=" Es", no="MLVSS/FLVSS Luascript", nl="MLVSS/FLVSS"}
-local text = {en=" Cells", fr=" Eléments", de=" Zellen", es=" Es", no=" Celle(r)", nl=" Cel(len)"}
-local text1 = {en="No Sensor", fr="Pas de capteur", de=" kein Sensor", es=" Es", no="Ingen Sensor", nl="Geen Sensor"}
-local text2 = {en="Text Color", fr="Couleur Texte", de="Text Farbe", es=" Es", no="Tekstfarge", nl="Tekstkleur"}
-local text3 = {en="Lipo Sensor", fr="Capteur Lipo", de="Lipo Sensor", es=" Es", no="LiPo-sensor", nl="Lipo Sensor"}
-local text4 = {en="Deactivate Title", fr="Désactiver le titre", de="Titel deaktivieren", es=" Es", no="Skru av'Tittel'", nl="Deactiveer Titel"}
+local version = "1.1"
+
 local locale = system.getLocale()
 
-
+local localeTexts = {
+	cells = {en=" Cells", fr=" Eléments", de=" Zellen", es=" Es", no=" Celle(r)", nl=" Cel(len)"},
+	noSensor = {en="No Sensor", fr="Pas de capteur", de=" kein Sensor", es=" Es", no="Ingen Sensor", nl="Geen Sensor"},
+	colorText = {en="Text Color", fr="Couleur Texte", de="Text Farbe", es=" Es", no="Tekstfarge", nl="Tekstkleur"},
+	lipoSensor = {en="Lipo Sensor", fr="Capteur Lipo", de="Lipo Sensor", es=" Es", no="LiPo-sensor", nl="Lipo Sensor"},
+	wrongLayout = {en="Wrong Layout", fr="Mauvaise disposition", de="de", es=" Es", no="no", nl="nl"}
+	}
+	
+local function localize(key)
+	return localeTexts[key][locale] or localTexts[key]["en"] or key
+end
 				 
 local field = {
 --{xLipo,yLipo,rLipo,thickLipo,xCell,yCell,rCell,thickCell,Cell,DxCell,DyCell,screenWidth,screenHeight,fontNbCell,fontLipo,fontCell,xName,yName}
@@ -32,7 +37,7 @@ local field = {
  }
  
 local function name(widget)
-	return translations[locale] or translations["en"]
+	return "MLVSS/FLVSS"
 end
 
 local function menu(widget)
@@ -62,7 +67,7 @@ local function getScreenSize()
 	elseif 	width == 300 and height == 88 	then return 8 
 	else
 		lcd.font(FONT_STD)
-		lcd.drawText(width/2, height/2, text4[locale] or text4["en"], CENTERED)					--Message "Désactiver le titre"
+		lcd.drawText(width/2, height/2, localize("wrongLayout"), CENTERED)					--Message "Désactiver le titre"
 	end
 end
 
@@ -128,7 +133,7 @@ local function paint(widget)
 		local xText = field[widget.screen][1] + field[widget.screen][3] + field[widget.screen][4] + 5
 		local yText = field[widget.screen][2]
 		lcd.font(field[widget.screen][14])														-- Taille de la police fontNbCell
-		lcd.drawText(xText, yText-30 , widget.value:stringValue(OPTION_CELL_COUNT)..text[locale] or text["en"])
+		lcd.drawText(xText, yText-30 , widget.value:stringValue(OPTION_CELL_COUNT)..localize("cells"))
 		-- Affichage du nom du capteur Lipo
 		lcd.drawText(field[widget.screen][17],field[widget.screen][18],widget.value:name())
 		
@@ -155,7 +160,7 @@ local function paint(widget)
 			end	
 		end		
 	else
-		lcd.drawText(field[widget.screen][17],field[widget.screen][18], text1[locale] or text1["en"], LEFT)		-- Message "pas de FLVSS"
+		lcd.drawText(field[widget.screen][17],field[widget.screen][18], localize("noSensor"), LEFT)		-- Message "pas de FLVSS"
 	end
 end
 
@@ -173,10 +178,10 @@ end
 
 local function configure(widget)
 	-- Color choice
-	line = form.addLine(text2[locale] or text2["en"])
+	line = form.addLine(localize("colorText"))
 	form.addColorField(line, nil, function() return widget.colorText end, function(value) widget.colorText = value end); 
 	-- Source choice
-    line = form.addLine(text3[locale] or text3["en"])
+    line = form.addLine(localize("lipoSensor"))
     form.addSourceField(line, nil, function() return widget.lipoSensor end, function(value) widget.lipoSensor = value end)
 end
 
@@ -191,7 +196,7 @@ local function write(widget)
 end
 
 local function init()
-	system.registerWidget({key="flvss",name=name, create=create, paint=paint, configure=configure, wakeup=wakeup, menu=menu, read=read, write=write})
+	system.registerWidget({key="flvss",name=name, title=false, create=create, paint=paint, configure=configure, wakeup=wakeup, menu=menu, read=read, write=write})
 end
 
 return{init=init}
