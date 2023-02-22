@@ -13,6 +13,7 @@ local bitmapsPath = "./bitmaps/"
 local version = "1.3"
 
 local locale = system.getLocale()
+--local w, h = lcd.getWindowSize()
 
 local lowFuel= "./Fuelev.wav" -- audio file for fuel alert
 
@@ -114,7 +115,7 @@ function drawStatus(x, y, status)
 		[34] = "Run-Max ",
 		[35] = "Restart ",
 		[36] = "No Status",
-		[37] = "No Sensor"
+		[37] = "NO SENSOR"
 	}	
 	local statString = msg_table_xicoy[tonumber(status)] 
 	lcd.drawText(x, y, statString, CENTERED)
@@ -140,24 +141,32 @@ local function play(widget)
 end
 
 
-local function drawGaugeV(widget)	
-	boxTop = 5
-	boxHeight = h - boxTop - 5
-	boxLeft = 310
-	boxWidth = w - boxLeft - 5
-		
-			--Gauge Background
+local function drawGaugeV(widget)
+	w, h = lcd.getWindowSize()
+	
+	if (w == 388) and (h == 316) then
+		boxTop = 5
+		boxHeight = h - boxTop - 5
+		boxLeft = 310
+		boxWidth = w - boxLeft - 5
+	else
+		boxTop = 5
+		boxHeight = h - boxTop - 5
+		boxLeft = 600
+		boxWidth = w - boxLeft - 5
+	end
+		--Gauge Background
 	lcd.color(WHITE)
 	lcd.drawFilledRectangle(boxLeft, boxTop, boxWidth, boxHeight)
-			-- Gauge color
+		-- Gauge color
 	lcd.color(lcd.RGB(getPercentColor(percent, common.fuelAlarm, common.tankCapacity)))
-			-- Gauge bar
+		-- Gauge bar
 	gaugeHeight = math.floor(((boxHeight) / 100) * percent)
 	lcd.drawFilledRectangle(boxLeft, (boxHeight-gaugeHeight)+5, boxWidth, gaugeHeight)
-			-- Gauge frame outline
+		-- Gauge frame outline
 	lcd.color(BLACK)
 	lcd.drawRectangle(boxLeft, boxTop, boxWidth, boxHeight,2)
-			-- Gauge percentage
+		-- Gauge percentage
 	lcd.font(FONT_XS)
 	if (percent > 5) then
 		lcd.drawText(boxLeft + boxWidth / 2, boxHeight - gaugeHeight + 5, math.floor(percent).."%", CENTERED)
@@ -166,6 +175,7 @@ local function drawGaugeV(widget)
 		lcd.color(RED)
 		lcd.drawText(boxLeft + boxWidth / 2, boxTop + boxHeight / 2 , "FUEL", CENTERED)
 	end
+	
 end
 
 local function drawGaugeH(widget)
@@ -271,6 +281,74 @@ local function paint(widget)
 		end
 		-- Fuel Gauge Vertical
 		drawGaugeV(widget)
+	
+	elseif (w == 784) and (h == 316) then
+		-- Mask
+		lcd.color(common.colorMask)
+		lcd.drawBitmap(300, 2, turbineLogo, 100, 50)
+		lcd.drawMask(15, 5, maskTurbine)
+		lcd.drawMask(350, 180, maskBattery)
+		lcd.drawMask(15, 195, maskTemp)
+		lcd.drawMask(15, 130, maskRpm)
+		lcd.drawMask(15, 270, maskPump)
+		lcd.drawMask(170, 270, maskThro)
+		lcd.drawMask(350, 260, maskFuel)
+		-- Datas Turbine
+		lcd.color(common.colorText)
+		lcd.font(FONT_XXL)
+
+			-- Affichage EGTC
+		if widget.sensors["value_EGTC"] ~= nil then
+			lcd.drawText(80, 190, widget.sensors["value_EGTC"], LEFT)
+		else 
+			lcd.drawText(80, 190, "....")
+		end
+			--Affichage RPM1
+		if widget.sensors["value_RPM1"] ~= nil then
+			lcd.drawText(80, 120, widget.sensors["value_RPM1"], LEFT)
+		else 
+			lcd.drawText(80, 120, "......")
+		end
+			--Affichage Throttle
+		if widget.sensors["value_THRT"] ~= nil then
+			lcd.drawText(210, 260,widget.sensors["value_THRT"].."%",LEFT)
+		else
+			lcd.drawText(210, 260, "...")
+		end	
+			--Affichage V batterie ECU
+		if widget.sensors["value_VBAT"] ~= nil then
+			lcd.drawNumber(410, 175, (tonumber(widget.sensors["value_VBAT"])/10),UNIT_VOLT,1,LEFT)
+		else
+			lcd.drawText(410, 175, "..")
+		end
+			--Affichage Pump
+		if widget.sensors["value_PUMP"] ~= nil then
+			lcd.drawText(60, 260, widget.sensors["value_PUMP"], LEFT)
+		else
+			lcd.drawText(60, 260, "...")
+		end			
+			-- Second Shaft Datas Turbine
+		if (widget.sensors["value_RPM2"] ~= nil) then
+			lcd.drawText(230, 120, " / "..widget.sensors["value_RPM2"], LEFT)
+			lcd.drawText(200, 190, " / "..widget.sensors["value_TEMP"], LEFT)
+		else
+			lcd.drawText(230, 120, " / ".."....", LEFT)
+			lcd.drawText(200, 190, " /  ".."..", LEFT)
+		end			
+			-- Turbine Status
+		drawStatus( 300, 60, widget.sensors["value_STAT"])	
+			-- Fuel Quantity
+		if (widget.sensors["value_FUEL"] ~= "0") then
+			if (fuelRemaining < common.fuelAlarm) then
+				lcd.color(RED)
+			end
+			lcd.drawNumber(400,260, fuelRemaining,UNIT_MILLILITER)
+		else
+			lcd.drawText(400,260,"....")
+		end
+		-- Fuel Gauge Vertical
+		drawGaugeV(widget)	
+	
 	elseif (w == 300) and (h == 88) then
 		-- Fuel Quantity
 		if (widget.sensors["value_FUEL"] ~= "0") then
