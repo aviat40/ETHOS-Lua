@@ -360,12 +360,13 @@ local function drawTimer(widget)
 	local timer = system.getSource({category = CATEGORY_TIMER, member = 0})
 	-- pour test lcd.invalidate
 	-- lcd.drawRectangle(widget.timer[1], widget.timer[2], widget.timer[3], widget.timer[4])
-	if timer ~= nil then
+	if (timer ~= nil) and (timer:value() >= 0) then
 		local timerSec = timer:value() % 60
 		local timerMin = math.floor((timer:value() - timerSec) / 60 )
 		lcd.drawText(widget.timer[1], widget.timer[2],string.format("%02d : %02d", timerMin, timerSec ), lcd.font(widget.timer[5]))
 		-- lcd.drawText(widget.timer[1], widget.timer[2],timer:stringValue(), widget.timer[5])
 	else
+		lcd.color(RED)
 		lcd.drawText(widget.timer[1], widget.timer[2],string.format("%02d : %02d", 0, 0 ), lcd.font(widget.timer[5]))
 	end
 end
