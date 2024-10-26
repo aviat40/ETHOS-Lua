@@ -60,12 +60,12 @@ local function create()
 
 	local sensors = {
 		-- [INTERFACE] = {test ,optional ,source=nil, value=nil, rect={x, y, w, h}, font=nil, color, display, unit, decimal, max}
-		[EGTC] = {test = 200, unit = UNIT_CELSIUS},
-		[RPM1] = {test = 60000, display = function(data) if data ~= nil then return ( data * 100 ) else return 0 end end, unit = UNIT_RPM, max = 300000},
-		[THRT] = {test = 12, unit = UNIT_PERCENT},
-		[VBAT] = {test = 8.2,display = function(data) if data ~= nil then return ( data / 10 ) else return 10 end end, unit = UNIT_VOLT, decimal = 2},
-		[PUMP] = {test = 256},
-		[FUEL] = {test = 75, unit = UNIT_MILLILITER},
+		[EGTC] = {test = 0, unit = UNIT_CELSIUS},
+		[RPM1] = {test = 0, display = function(data) if data ~= nil then return ( data * 100 ) else return 0 end end, unit = UNIT_RPM, max = 300000},
+		[THRT] = {test = 0, unit = UNIT_PERCENT},
+		[VBAT] = {test = 0.0,display = function(data) if data ~= nil then return ( data / 10 ) else return 10 end end, unit = UNIT_VOLT, decimal = 2},
+		[PUMP] = {test = 0},
+		[FUEL] = {test = 0, unit = UNIT_MILLILITER},
 		[STAT] = {test = 36},
 		[TANK] = {test = 2000, unit = UNIT_MILLILITER},
 		[FACTOR] = {test = 100},
