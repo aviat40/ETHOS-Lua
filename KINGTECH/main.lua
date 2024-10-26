@@ -31,7 +31,7 @@ local localeTexts = {
 	fileAlarm = {en="File Name", fr="Fichier alarme", de="Name De", es="text8_es"},
 	haptic = {en="Low Fuel Haptic", fr="Vibreur alerte carburant", de="text9_de", es="text9_es"},
 	switchPlay = {en="Fuel announce switch", fr="Inter lecture carburant", de="text10_de", es="text10_es"},
-	layout = {en="Wrong layout", fr="Mauvais écran", de =" Texte", es =" Text"}
+	layout = {en="Use FULLSCREEN layout", fr="Utiliser disposition PLEIN ECRAN", de =" Texte", es =" Text"}
 	}
 	
 local function localize(key)
@@ -66,7 +66,7 @@ local function create()
 		[VBAT] = {test = 8.2,display = function(data) if data ~= nil then return ( data / 10 ) else return 10 end end, unit = UNIT_VOLT, decimal = 2},
 		[PUMP] = {test = 256},
 		[FUEL] = {test = 75, unit = UNIT_MILLILITER},
-		[STAT] = {test = 3},
+		[STAT] = {test = 36},
 		[TANK] = {test = 2000, unit = UNIT_MILLILITER},
 		[FACTOR] = {test = 100},
 		
@@ -360,13 +360,12 @@ local function drawTimer(widget)
 	local timer = system.getSource({category = CATEGORY_TIMER, member = 0})
 	-- pour test lcd.invalidate
 	-- lcd.drawRectangle(widget.timer[1], widget.timer[2], widget.timer[3], widget.timer[4])
-	if (timer ~= nil) and (timer:value() >= 0) then
+	if timer ~= nil then
 		local timerSec = timer:value() % 60
 		local timerMin = math.floor((timer:value() - timerSec) / 60 )
 		lcd.drawText(widget.timer[1], widget.timer[2],string.format("%02d : %02d", timerMin, timerSec ), lcd.font(widget.timer[5]))
 		-- lcd.drawText(widget.timer[1], widget.timer[2],timer:stringValue(), widget.timer[5])
 	else
-		lcd.color(RED)
 		lcd.drawText(widget.timer[1], widget.timer[2],string.format("%02d : %02d", 0, 0 ), lcd.font(widget.timer[5]))
 	end
 end
@@ -388,12 +387,14 @@ local function paint(widget)
 		for appId, sensor in pairs(widget.sensors) do
 			lcd.font(sensor.font)
 			lcd.color(widget.colorText)
-			if sensor.source ~= nil and sensor.optional == nil then
+			-- if sensor.source ~= nil and sensor.optional == nil then
+			if sensor.source ~= nil then
 					-- Used for lcd.invalidate()
 				-- lcd.drawRectangle(sensor.rect[1], sensor.rect[2], sensor.rect[3], sensor.rect[4])
-					-- Used for Test value
-				-- sensor.value = sensor.test
 				
+				-- if sensor.source:value() == nil then
+					-- sensor.value = sensor.test
+				-- end
 				if appId == STAT then
 					drawStatus(sensor.rect[1], sensor.rect[2], sensor.value)
 				elseif appId == FUEL then
@@ -426,13 +427,25 @@ local function wakeup(widget)
 			if sensor.source == nil then
 				sensor.source = system.getSource({category=CATEGORY_TELEMETRY, appId=appId})
 			end
-			if sensor.source ~= nil then
+						
+			-- if sensor.source ~= nil then
+				-- if sensor.display ~= nil then
+					-- newValue = sensor.display(sensor.source:value())
+				-- else		
+					-- newValue = sensor.source:value()
+				-- end
+			-- end
+			
+			if sensor.source:value()== nil then
+					newValue = sensor.test
+			elseif sensor.source ~= nil then
 				if sensor.display ~= nil then
 					newValue = sensor.display(sensor.source:value())
 				else		
 					newValue = sensor.source:value()
 				end
 			end
+			
 			if sensor.value ~= newValue then
 				sensor.value = newValue
 				lcd.invalidate(sensor.rect[1], sensor.rect[2], sensor.rect[3], sensor.rect[4])
