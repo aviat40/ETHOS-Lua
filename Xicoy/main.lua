@@ -2,15 +2,17 @@
 -- #                                                                                                        #
 -- # Xicoy lua for ETHOS V1.5.7 or above                                                                    #
 -- #                                                                                                        #
+-- #  X10-12 / X14 / X18 / X20 - Need FULLSCREEN LAYOUT                                                     #
+-- #                                                                                                        #
 -- # Turbine widget TeleX Xicoy telemetry module for FrSky	         			                            #
 -- #                                                                                                        #
 -- # hobby-rc.freeboxos.fr (2024)                                                                           #
 -- #                                                                                                        #
 -- ##########################################################################################################
 
--- Path to pictures on SD-CARD
-local bitmapsPath = "./bitmaps/"
 local version = "1.4"
+	-- Path to pictures on SD-CARD
+local bitmapsPath = "./bitmaps/"
 
 local locale = system.getLocale()
 
@@ -30,7 +32,7 @@ local localeTexts = {
 	haptic = {en="Low Fuel Haptic", fr="Vibreur alerte carburant", de="text9_de", es="text9_es"},
 	switchPlay = {en="Fuel announce switch", fr="Inter lecture carburant", de="text10_de", es="text10_es"},
 	turbine = {en="Xicoy model", fr="Modèle Xicoy", de ="texte_de", es="texte_es"},
-	layout = {en="Wrong layout", fr="Mauvais écran", de =" Texte", es =" Text"}
+	layout = {en="Use FULLSCREEN layout", fr="Utiliser disposition PLEIN ECRAN", de =" Texte", es =" Text"}
 	}
 	
 local function localize(key)
@@ -59,15 +61,15 @@ local function create()
 
 	local sensors = {
 		-- [INTERFACE] = {test ,optional ,source=nil, value=nil, rect={x, y, w, h}, font=nil, color, display, unit, decimal, max}
-		[EGTC] = {unit = UNIT_CELSIUS},
-		[RPM1] = {unit = UNIT_RPM, max = 300000},
-		[THRT] = {unit = UNIT_PERCENT},
-		[VBAT] = {display = function(data) if data ~= nil then return ( data / 10 ) else return 10	end end, unit = UNIT_VOLT, decimal = 2},
-		[PUMP] = {},
-		[FUEL] = {unit = UNIT_MILLILITER},
-		[STAT] = {},
-		[RPM2] = {unit = UNIT_RPM, max = 10000},
-		[TEMP] = {unit = UNIT_CELSIUS},
+		[EGTC] = {test = 0, unit = UNIT_CELSIUS},
+		[RPM1] = {test = 0, unit = UNIT_RPM, max = 300000},
+		[THRT] = {test = 0, unit = UNIT_PERCENT},
+		[VBAT] = {test = 0, display = function(data) if data ~= nil then return ( data / 10 ) else return 10	end end, unit = UNIT_VOLT, decimal = 2},
+		[PUMP] = {test = 0},
+		[FUEL] = {test = 0, unit = UNIT_MILLILITER},
+		[STAT] = {test = 36},
+		[RPM2] = {test = 0, unit = UNIT_RPM, max = 10000},
+		[TEMP] = {test = 0,unit = UNIT_CELSIUS},
 	}
 	
 	for appId, sensor in pairs(sensors) do
@@ -100,7 +102,7 @@ end
 
 local function build(widget)
 
-	-- Si Xicoy, pas besoin d'afficher RPM2 / TEMP ( Il faut relancer le widget pour la prose en compte )
+	-- Si Xicoy, pas besoin d'afficher RPM2 / TEMP ( Il faut relancer le widget pour la prise en compte )
 	if widget.turbineType == 1 then
 		widget.sensors[RPM2].optional = true
 		widget.sensors[TEMP].optional = true
@@ -150,7 +152,9 @@ local function build(widget)
 			sensor.font = midFont
 		end
 			--{x, y, width, height, font)
-		widget.timer = { 200, 350, 220, 100, lcd.loadFont("xxxxl.fnt")}
+		local FONT_XXXXL= lcd.loadFont("FLASH:/fonts/xxxxl.fnt")
+		widget.timer = { 200, 350, 220, 100, FONT_XXXXL}
+		-- widget.timer = { 200, 350, 220, 100, lcd.loadFont("xxxxl.fnt")}
 		
 	elseif (width and w ) == 480 and (height and h) == 320 then		--X18 series and full screen
 		widget.validLayout = true									
@@ -185,8 +189,10 @@ local function build(widget)
 			sensor.font = midFont
 		end
 			--{x, y, width, height, font)
-		widget.timer = { 130, 260, 130, 50, lcd.loadFont("xxxl.fnt")}
-
+		local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
+		widget.timer = { 130, 260, 130, 50, FONT_XXXL}
+		-- widget.timer = { 130, 260, 130, 50, lcd.loadFont("xxxl.fnt")}
+		
 	elseif (width and w ) == 640 and (height and h) == 360 then		--X14 series and full screen
 		widget.validLayout = true									
 		--FONT_BOLD / FONT_ITALIC / FONT_L / FONT_L_BOLD / FONT_S /FONT_S_BOLD /FONT_STD / FONT_XL / FONT_XS / FONT_XS_BOLD / FONT_XXL / FONT_XXS
@@ -220,7 +226,9 @@ local function build(widget)
 			sensor.font = midFont
 		end
 			--{x, y, w, h, font)
-		widget.timer = { 160, 280, 160, 70, lcd.loadFont("xxxl.fnt")}
+		local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
+		widget.timer = { 160, 280, 160, 70, FONT_XXXL }
+		-- widget.timer = { 160, 280, 160, 70, lcd.loadFont("xxxl.fnt")}
 			
 	elseif (width and w ) == 480 and (height and h) == 272 then		--X10 / X12 series and full screen
 		widget.validLayout = true										
@@ -255,7 +263,9 @@ local function build(widget)
 			sensor.font = midFont
 		end
 		--{x, y, w, h, font) w and h are used for lcd.invalidate
-		widget.timer = { 135, 220, 130, 50, lcd.loadFont("xxxl.fnt")}
+		local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
+		widget.timer = { 135, 220, 130, 50, FONT_XXXL}
+		-- widget.timer = { 135, 220, 130, 50, lcd.loadFont("xxxl.fnt")}
 	else
 		widget.validLayout = false
 	end	  
@@ -299,7 +309,6 @@ local msg_table_xicoy = {
 	[34] = "Run-Max ",
 	[35] = "Restart ",
 	[36] = "No Status",
-	--[37] = "NO SENSOR"
 }	
 
 local function drawStatus(x, y, status)
@@ -343,10 +352,13 @@ end
 
 local function drawTimer(widget)
 	local timer = system.getSource({category = CATEGORY_TIMER, member = 0})
+		-- for test lcd.invalidate
+		-- lcd.drawRectangle(widget.timer[1], widget.timer[2], widget.timer[3], widget.timer[4])
 	if (timer ~= nil) and (timer:value() >= 0) then
 		local timerSec = timer:value() % 60
 		local timerMin = math.floor((timer:value() - timerSec) / 60 )
 		lcd.drawText(widget.timer[1], widget.timer[2],string.format("%02d : %02d", timerMin, timerSec ), widget.timer[5])
+			--Can be used for XX:XX:XX timer
 		--lcd.drawText(widget.timer[1], widget.timer[2],timer:stringValue(), widget.timer[5])
 	else
 		lcd.color(RED)
@@ -372,10 +384,13 @@ local function paint(widget)
 			lcd.font(sensor.font)
 			lcd.color(widget.colorText)
 			if sensor.source ~= nil and sensor.optional == nil then
+				-- Used for lcd.invalidate()
+				-- lcd.drawRectangle(sensor.rect[1], sensor.rect[2], sensor.rect[3], sensor.rect[4])
+				
+					-- Used for Test value . Remove for radio use
+				-- sensor.value = sensor.test
+				
 				if appId == STAT then
-					-- if sensor.value == nil then
-					-- 	sensor.value = 37
-					-- end
 					drawStatus(sensor.rect[1], sensor.rect[2], sensor.value)
 				elseif appId == FUEL then
 					fuelRemaining = math.floor((sensor.value * widget.tankCapacity ) / 100)
@@ -407,7 +422,16 @@ local function wakeup(widget)
 			if sensor.source == nil then
 				sensor.source = system.getSource({category=CATEGORY_TELEMETRY, appId=appId})
 			end
-			if sensor.source ~= nil then
+			-- if sensor.source ~= nil then
+				-- if sensor.display ~= nil then
+					-- newValue = sensor.display(sensor.source:value())
+				-- else		
+					-- newValue = sensor.source:value()
+				-- end
+			-- end
+			if sensor.source:value()== nil then
+					newValue = sensor.test
+			elseif sensor.source ~= nil then
 				if sensor.display ~= nil then
 					newValue = sensor.display(sensor.source:value())
 				else		
@@ -473,8 +497,8 @@ local function configure(widget)
 		-- Fuel Tank low level
 	line = form.addLine(localize("fuelAlarm"))
     local alarmField = form.addNumberField(line, nil, 0, widget.tankCapacity,
-		function() return widget.sensors[FUEL].alarm end,
-		function(newValue) widget.sensors[FUEL].alarm = newValue
+		function() return widget.fuelAlarm end,
+		function(newValue) widget.fuelAlarm = newValue
 		end)
 	alarmField:default(600)
 	alarmField:step(50)
