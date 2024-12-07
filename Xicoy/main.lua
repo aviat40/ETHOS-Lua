@@ -59,17 +59,20 @@ local TEMP = 0x4415
 
 local function create()
 
+	local FONT_XXXXL = lcd.loadFont("FLASH:/fonts/xxxxl.fnt")
+	local FONT_XXXL = lcd.loadFont("FLASH:/fonts/xxxl.fnt")
+
 	local sensors = {
-		-- [INTERFACE] = {test ,optional ,source=nil, value=nil, rect={x, y, w, h}, font=nil, color, display, unit, decimal, max}
-		[EGTC] = {test = 0, unit = UNIT_CELSIUS},
-		[RPM1] = {test = 0, unit = UNIT_RPM, max = 300000},
-		[THRT] = {test = 0, unit = UNIT_PERCENT},
-		[VBAT] = {test = 0, display = function(data) if data ~= nil then return ( data / 10 ) else return 10	end end, unit = UNIT_VOLT, decimal = 2},
-		[PUMP] = {test = 0},
-		[FUEL] = {test = 0, unit = UNIT_MILLILITER},
-		[STAT] = {test = 36},
-		[RPM2] = {test = 0, unit = UNIT_RPM, max = 10000},
-		[TEMP] = {test = 0,unit = UNIT_CELSIUS},
+		-- [INTERFACE] = {name, test ,optional ,source=nil, value=nil, rect={x, y, w, h}, font=nil, color, display, unit, decimal, max}
+		[EGTC] = {name = "EGTC", test = 0, unit = UNIT_CELSIUS},
+		[RPM1] = {name = "RPM1", test = 0, unit = UNIT_RPM, max = 300000},
+		[THRT] = {name = "THRT", test = 0, unit = UNIT_PERCENT},
+		[VBAT] = {name = "VABT", test = 0, display = function(data) if data ~= nil then return ( data / 10 ) else return 10	end end, unit = UNIT_VOLT, decimal = 2},
+		[PUMP] = {name = "PUMP", test = 0},
+		[FUEL] = {name = "FUEL", test = 0, unit = UNIT_MILLILITER},
+		[STAT] = {name = "STAT", test = 36},
+		[RPM2] = {name = "RPM2", test = 0, unit = UNIT_RPM, max = 10000},
+		[TEMP] = {name = "TEMP", test = 0,unit = UNIT_CELSIUS},
 	}
 	
 	for appId, sensor in pairs(sensors) do
@@ -78,7 +81,8 @@ local function create()
 			newSensor = model.createSensor()
 			newSensor:appId(appId)
 			newSensor:physId(0x12)
-			newSensor:name(string.format("%x", appId))
+			-- newSensor:name(string.format("%x", appId))
+			newSensor:name(sensor.name)
 			newSensor:maximum(sensor.max)
 			--newSensor:unit(sensor.unit)
 			--newSensor:decimals(3)
@@ -97,6 +101,9 @@ local function create()
 		haptic =  false,
 		switchPlay = nil,
 		validLayout = false,
+		FONT_XXXXL = FONT_XXXXL,
+		FONT_XXXL = FONT_XXXL,
+		
 	}
 end
 
@@ -152,10 +159,9 @@ local function build(widget)
 			sensor.font = midFont
 		end
 			--{x, y, width, height, font)
-		local FONT_XXXXL= lcd.loadFont("FLASH:/fonts/xxxxl.fnt")
-		widget.timer = { 200, 350, 220, 100, FONT_XXXXL}
-		-- widget.timer = { 200, 350, 220, 100, lcd.loadFont("xxxxl.fnt")}
-		
+		-- local FONT_XXXXL= lcd.loadFont("FLASH:/fonts/xxxxl.fnt")
+		widget.timer = { 200, 350, 220, 100, widget.FONT_XXXXL}
+				
 	elseif (width and w ) == 480 and (height and h) == 320 then		--X18 series and full screen
 		widget.validLayout = true									
 	--FONT_BOLD / FONT_ITALIC / FONT_L / FONT_L_BOLD / FONT_S /FONT_S_BOLD /FONT_STD / FONT_XL / FONT_XS / FONT_XS_BOLD / FONT_XXL / FONT_XXS
@@ -189,10 +195,9 @@ local function build(widget)
 			sensor.font = midFont
 		end
 			--{x, y, width, height, font)
-		local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
-		widget.timer = { 130, 260, 130, 50, FONT_XXXL}
-		-- widget.timer = { 130, 260, 130, 50, lcd.loadFont("xxxl.fnt")}
-		
+		-- local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
+		widget.timer = { 130, 260, 130, 50, widget.FONT_XXXL}
+				
 	elseif (width and w ) == 640 and (height and h) == 360 then		--X14 series and full screen
 		widget.validLayout = true									
 		--FONT_BOLD / FONT_ITALIC / FONT_L / FONT_L_BOLD / FONT_S /FONT_S_BOLD /FONT_STD / FONT_XL / FONT_XS / FONT_XS_BOLD / FONT_XXL / FONT_XXS
@@ -226,10 +231,9 @@ local function build(widget)
 			sensor.font = midFont
 		end
 			--{x, y, w, h, font)
-		local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
-		widget.timer = { 160, 280, 160, 70, FONT_XXXL }
-		-- widget.timer = { 160, 280, 160, 70, lcd.loadFont("xxxl.fnt")}
-			
+		-- local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
+		widget.timer = { 160, 280, 160, 70, widget.FONT_XXXL }
+					
 	elseif (width and w ) == 480 and (height and h) == 272 then		--X10 / X12 series and full screen
 		widget.validLayout = true										
 	--FONT_BOLD / FONT_ITALIC / FONT_L / FONT_L_BOLD / FONT_S /FONT_S_BOLD /FONT_STD / FONT_XL / FONT_XS / FONT_XS_BOLD / FONT_XXL / FONT_XXS
@@ -263,9 +267,9 @@ local function build(widget)
 			sensor.font = midFont
 		end
 		--{x, y, w, h, font) w and h are used for lcd.invalidate
-		local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
-		widget.timer = { 135, 220, 130, 50, FONT_XXXL}
-		-- widget.timer = { 135, 220, 130, 50, lcd.loadFont("xxxl.fnt")}
+		-- local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
+		widget.timer = { 135, 220, 130, 50, widget.FONT_XXXL}
+	
 	else
 		widget.validLayout = false
 	end	  
