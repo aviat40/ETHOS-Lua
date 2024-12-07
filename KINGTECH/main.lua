@@ -58,17 +58,20 @@ local FACTOR = 0x4411
 
 local function create()
 
+	local FONT_XXXXL = lcd.loadFont("FLASH:/fonts/xxxxl.fnt")
+	local FONT_XXXL = lcd.loadFont("FLASH:/fonts/xxxl.fnt")
+
 	local sensors = {
-		-- [INTERFACE] = {test ,optional ,source=nil, value=nil, rect={x, y, w, h}, font=nil, color, display, unit, decimal, max}
-		[EGTC] = {test = 0, unit = UNIT_CELSIUS},
-		[RPM1] = {test = 0, display = function(data) if data ~= nil then return ( data * 100 ) else return 0 end end, unit = UNIT_RPM, max = 300000},
-		[THRT] = {test = 0, unit = UNIT_PERCENT},
-		[VBAT] = {test = 0.0,display = function(data) if data ~= nil then return ( data / 10 ) else return 10 end end, unit = UNIT_VOLT, decimal = 2},
-		[PUMP] = {test = 0},
-		[FUEL] = {test = 0, unit = UNIT_MILLILITER},
-		[STAT] = {test = 36},
-		[TANK] = {test = 2000, unit = UNIT_MILLILITER},
-		[FACTOR] = {test = 100},
+		-- [INTERFACE] = {name ,test ,optional ,source=nil, value=nil, rect={x, y, w, h}, font=nil, color, display, unit, decimal, max}
+		[EGTC] = {name = "EGTC", test = 0, unit = UNIT_CELSIUS},
+		[RPM1] = {name = "RPM1", test = 0, display = function(data) if data ~= nil then return ( data * 100 ) else return 0 end end, unit = UNIT_RPM, max = 300000},
+		[THRT] = {name = "THRT", test = 0, unit = UNIT_PERCENT},
+		[VBAT] = {name = "VBAT", test = 0.0,display = function(data) if data ~= nil then return ( data / 10 ) else return 10 end end, unit = UNIT_VOLT, decimal = 2},
+		[PUMP] = {name = "PUMP", test = 0},
+		[FUEL] = {name = "FUEL", test = 0, unit = UNIT_MILLILITER},
+		[STAT] = {name = "STAT", test = 36},
+		[TANK] = {name = "TANK", test = 2000, unit = UNIT_MILLILITER},
+		[FACTOR] = {name = "FACTOR", test = 100},
 		
 	}
 	
@@ -80,6 +83,7 @@ local function create()
 			newSensor:physId(0x12)
 			newSensor:name(string.format("%x", appId))
 			newSensor:maximum(sensor.max)
+			newSensor:name(sensor.name)
 			--newSensor:unit(sensor.unit)
 			--newSensor:decimals(3)
 		end
@@ -97,6 +101,8 @@ local function create()
 		haptic =  false,
 		switchPlay = nil,
 		validLayout = false,
+		FONT_XXXXL = FONT_XXXXL,
+		FONT_XXXL = FONT_XXXL,
 	}
 end
 
@@ -150,8 +156,8 @@ local function build(widget)
 		widget.sensors[TANK].font = FONT_S
 		widget.sensors[FACTOR].font = FONT_S
 			--{x, y, w, h, font)
-		local FONT_XXXXL= lcd.loadFont("FLASH:/fonts/xxxxl.fnt")
-		widget.timer = { 200, 350, 220, 100, FONT_XXXXL}
+		-- local FONT_XXXXL= lcd.loadFont("FLASH:/fonts/xxxxl.fnt")
+		widget.timer = { 200, 350, 220, 100, widget.FONT_XXXXL}
 		
 	elseif (width and w ) == 480 and (height and h) == 320 then		--X18 series et mode plein écran
 		widget.validLayout = true									
@@ -190,8 +196,8 @@ local function build(widget)
 		widget.sensors[TANK].font = FONT_S
 		widget.sensors[FACTOR].font = FONT_S
 			--{x, y, w, h, font)
-		local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
-		widget.timer = { 130, 260, 130, 50, FONT_XXXL}
+		-- local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
+		widget.timer = { 130, 260, 130, 50, widget.FONT_XXXL}
 
 	elseif (width and w ) == 640 and (height and h) == 360 then		--X14 series et mode plein écran
 		widget.validLayout = true									
@@ -230,8 +236,8 @@ local function build(widget)
 		widget.sensors[TANK].font = FONT_S
 		widget.sensors[FACTOR].font = FONT_S
 		--{x, y, w, h, font)
-		local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
-		widget.timer = { 160, 280, 160, 70, FONT_XXXL }
+		-- local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
+		widget.timer = { 160, 280, 160, 70, widget.FONT_XXXL }
 			
 	elseif (width and w ) == 480 and (height and h) == 272 then		--X10 / X12 series et mode plein écran
 		widget.validLayout = true										
@@ -270,8 +276,8 @@ local function build(widget)
 		widget.sensors[TANK].font = FONT_S
 		widget.sensors[FACTOR].font = FONT_S
 		--{x, y, w, h, font)
-		local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
-		widget.timer = { 135, 220, 130, 50, FONT_XXXL}
+		-- local FONT_XXXL= lcd.loadFont("FLASH:/fonts/xxxl.fnt")
+		widget.timer = { 135, 220, 130, 50, widget.FONT_XXXL}
 	else
 		widget.validLayout = false
 	end	  
