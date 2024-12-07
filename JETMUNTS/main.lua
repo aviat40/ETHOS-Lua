@@ -60,16 +60,16 @@ local FACTOR = 0x4411
 local function create()
 
 	local sensors = {
-		-- [INTERFACE] = {test ,optional ,source=nil, value=nil, rect={x, y, w, h}, font=nil, color, display, unit, decimal, max}
-		[EGTC] = {test = 200, unit = UNIT_CELSIUS},
-		[RPM1] = {test = 56000, unit = UNIT_RPM, max = 300000},
-		[THRT] = {test = 12, unit = UNIT_PERCENT},
-		[VBAT] = {test = 8.2,display = function(data) if data ~= nil then return ( data / 10 ) else return 10	end end, unit = UNIT_VOLT, decimal = 2},
-		[PUMP] = {test = 256},
-		[FUEL] = {test = 75, unit = UNIT_MILLILITER},
-		[STAT] = {test = 3},
-		[TANK] = {test = 2000, unit = UNIT_MILLILITER},
-		[FACTOR] = {test = 100},
+		-- [INTERFACE] = {test ,name, optional ,source=nil, value=nil, rect={x, y, w, h}, font=nil, color, display, unit, decimal, max}
+		[EGTC] = {test = 0, name = "EGTC", unit = UNIT_CELSIUS},
+		[RPM1] = {test = 0, name = "RPM1", display = function(data) if data ~= nil then return ( data * 100 ) else return 10 end end,unit = UNIT_RPM, max = 300000},
+		[THRT] = {test = 0, name = "THRT", unit = UNIT_PERCENT},
+		[VBAT] = {test = 0.0, name = "VBAT", display = function(data) if data ~= nil then return ( data / 10 ) else return 10 end end, unit = UNIT_VOLT, decimal = 2},
+		[PUMP] = {test = 0, name = "PUMP"},
+		[FUEL] = {test = 0, name = "FUEL", unit = UNIT_MILLILITER},
+		[STAT] = {test = 36, name = "STAT"},
+		[TANK] = {test = 2000, name = "TANK", unit = UNIT_MILLILITER},
+		[FACTOR] = {test = 100, name = "FACTOR"},
 		
 	}
 	
@@ -79,9 +79,10 @@ local function create()
 			newSensor = model.createSensor()
 			newSensor:appId(appId)
 			newSensor:physId(0x12)
-			newSensor:name(string.format("%x", appId))
+			-- newSensor:name(string.format("%x", appId))
+			newSensor:name(sensor.name)
 			newSensor:maximum(sensor.max)
-			--newSensor:unit(sensor.unit)
+			newSensor:unit(sensor.unit)
 			--newSensor:decimals(3)
 		end
 	end
@@ -289,24 +290,36 @@ local msg_table_jetsmunt = {
 		[3]  = "Ready",
 		[4]  = "Ignition",
 		[5]  = "FuelRamp",
-		[6]  = "Glow Test",
+		[6]  = "Glow Bad",
 		[7]  = "Running",
 		[8]  = "Stop",
 		[9]  = "FlameOut",
-		[10] = "Low RPM",
+		[10] = "SpeedLow",
 		[11] = "Cooling",
 		[12] = "Glow Bad",
 		[13] = "Start Bad",
-		[14] = "Start On",
-		[15] = "Pre Heat",
-		[16] = "Battery!",
-		[17] = "Time Out",
-		[18] = "Ign.Fail",
-		[19] = "Burner On",
-		[20] = "Starting",
-		[21] = "SwitchOv",
-		[22] = "No RC Signal",
-		[23] = "Speed Low",
+		[14] = "AccelFail",
+		[15] = "Start On",
+		[16] = "User Off",
+		[17] = "FailSafe",
+		[18] = "Low RPM",
+		[19] = "Reset",
+		[20] = "RxPwFail",
+		[21] = "Pre Heat",
+		[22] = "Battery Low",
+		[23] = "Time Out",
+		[24] = "Overload!",
+		[25] = "Ignit Fail",
+		[26] = "Burner On",
+		[27] = "Starting",
+		[28] = "SwitchOv",
+		[29] = "Cal.Pump",
+		[30] = "PumpLim",
+		[31] = "No Engine",
+		[32] = "PwrBoost",
+		[33] = "Run Idle",
+		[34] = "Run Max",
+		[35] = "Restart",
 		[36] = "No Status",
 	}	
 
