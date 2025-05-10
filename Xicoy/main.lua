@@ -80,7 +80,7 @@ local function create()
 		if sensor.source == nil then
 			newSensor = model.createSensor()
 			newSensor:appId(appId)
-			newSensor:physId(0x12)
+			newSensor:physId(0x1B)
 			-- newSensor:name(string.format("%x", appId))
 			newSensor:name(sensor.name)
 			newSensor:maximum(sensor.max)
