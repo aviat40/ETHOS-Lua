@@ -1,6 +1,6 @@
--- ##########################################################################################################
+ -- ##########################################################################################################
 -- #                                                                                                        #
--- # FLVSS / MLVSS lua for ETHOS V1.1.0 or above 															#
+-- # FLVSS / MLVSS lua for ETHOS V1.5.12 or above 															#
 -- #																										#
 -- # IMPORTANT! Update the MLVSS sensor to the latest firmware from frsky-rc.com web page before use        #
 -- #                                                                                                        #
@@ -8,68 +8,76 @@
 -- #                                                                                                        #
 -- ##########################################################################################################
 
-local version = "1.1"
+local version = "1.2"
 
-local locale = system.getLocale()
-
-local localeTexts = {
-	cells = {en=" Cells", fr=" Eléments", de=" Zellen", es=" Es", no=" Celle(r)", nl=" Cel(len)"},
-	noSensor = {en="No Sensor", fr="Pas de capteur", de=" kein Sensor", es=" Es", no="Ingen Sensor", nl="Geen Sensor"},
-	colorText = {en="Text Color", fr="Couleur Texte", de="Text Farbe", es=" Es", no="Tekstfarge", nl="Tekstkleur"},
-	lipoSensor = {en="Lipo Sensor", fr="Capteur Lipo", de="Lipo Sensor", es=" Es", no="LiPo-sensor", nl="Lipo Sensor"},
-	wrongLayout = {en="Wrong Layout", fr="Mauvaise disposition", de="de", es=" Es", no="no", nl="nl"}
-	}
-	
-local function localize(key)
-	return localeTexts[key][locale] or localTexts[key]["en"] or key
-end
-				 
-local field = {
---{xLipo,yLipo,rLipo,thickLipo,xCell,yCell,rCell,thickCell,Cell,DxCell,DyCell,screenWidth,screenHeight,fontNbCell,fontLipo,fontCell,xName,yName}
-	{45, 70, 35, 10, 210, 40, 25, 8, true, 70, 70, 388, 154, FONT_S, FONT_L_BOLD, FONT_XS, 100, 120},	-- Taille écran 388 * 132
-	{70, 70, 35, 10, 0, 0, 0, 0, false, 0, 0, 256, 154, FONT_S, FONT_L_BOLD, FONT_XS, 150, 120},		-- Taille écran 256 * 132
-	{55, 75, 40, 10, 250, 75, 30, 8, true, 95, 70, 784, 154, FONT_S, FONT_L_BOLD, FONT_XS, 110, 120},	-- Taille écran 784 * 132
-	{60, 70, 40, 10, 40, 180, 30, 8, true, 87, 85, 256, 316, FONT_S, FONT_L_BOLD, FONT_XS, 170, 5},		-- Taille écran 256 * 294
-	{70, 50, 35, 10, 0, 0, 0, 0, false, 0, 0, 256, 100, FONT_S, FONT_L_BOLD, FONT_XS, 180, 80},			-- Taille écran 256 * 100
-	{60, 60, 40, 10, 60, 160, 30, 8, true, 87, 85, 388, 316, FONT_S, FONT_L_BOLD, FONT_XS,280 , 50},	-- Taille écran 388 * 316
-	{90, 145, 60, 20, 370, 80, 50, 15, true, 150, 150, 784, 316, FONT_STD, FONT_XXL, FONT_XL, 150, 250},-- Taille écran 784 * 294
-	{45, 44, 30, 10, 0, 0, 0, 0, false, 0, 0, 300, 88, FONT_S, FONT_L_BOLD, FONT_XS,200,40},			-- Taille écran 300 * 88
- }
- 
 local function name(widget)
-	return "MLVSS/FLVSS"
+    return "FLVSS"
 end
 
 local function menu(widget)
 	return{{"FLVSS v"..version, function() end}}
 end
 
+local locale = system.getLocale()
+
+local w,h, checkTelemetry
+
+local localeTexts = {
+	cells = {en=" Cells", fr=" Eléments", de=" Zellen", es=" Es", no=" Celle(r)", nl=" Cel(len)"},
+	noSensor = {en="No Sensor configured", fr="Pas de capteur configuré", de=" kein Sensor", es=" Es", no="Ingen Sensor", nl="Geen Sensor"},
+	noData = {en="No Data received", fr="En attente télémétrie", de=" kein Data", es=" Es", no="Ingen Sensor", nl="Geen Sensor"},
+	textColor = {en="Text Color", fr="Couleur Texte", de="Text Farbe", es=" Es", no="Tekstfarge", nl="Tekstkleur"},
+	Name = {en="Lipo Sensor", fr="Capteur Lipo", de="Lipo Sensor", es=" Es", no="LiPo-sensor", nl="Lipo Sensor"},
+	layout = {en="Use FULLSCREEN layout", fr="Sélectionner PLEIN ECRAN", de =" Texte", es =" Text"}
+	}
+
+local function localize(key)
+	return localeTexts[key][locale] or localTexts[key]["en"] or key
+end
+
 local function create()
-	return {colorText = lcd.RGB(0xE0, 0xE4, 0xE0),
-			value = nil, 
-			lipoSensor = nil
+
+	local widget = {
+			colorText = colorText,
+			source = source,
+			sensor = sensor,
+			validLayout = false,
+			value = value,
 			}
+	
+	return widget
 end
 
-------------------------------------------------------------------------------------------
--- Définition de la taille de l'écran sans le titre
-------------------------------------------------------------------------------------------
+local function build(widget)
 
-local function getScreenSize()
-	local width, height = lcd.getWindowSize()
-	if 		width == 388 and height == 154 	then return 1 
-	elseif 	width == 256 and height == 154 	then return 2 
-	elseif	width == 784 and height == 154 	then return 3 
-	elseif 	width == 256 and height == 316 	then return 4 
-	elseif 	width == 256 and height == 100 	then return 5 
-	elseif 	width == 388 and height == 316 	then return 6 
-	elseif 	width == 784 and height == 316 	then return 7 
-	elseif 	width == 300 and height == 88 	then return 8 
+	widget.sensor = system.getSource(widget.source:name())
+	
+	local width = system.getVersion().lcdWidth
+	local height = system.getVersion().lcdHeight
+	w, h = lcd.getWindowSize()
+		
+		--{xLipo,yLipo,rLipo,thickLipo,xCell,yCell,rCell,thickCell,Cell ,DxCell,DyCell,Width,Height,fontNbCell,fontLipo ,fontCell,xName,yName,xLipoV,yLipoV,xNbCell,yNbCell,}
+
+	if (width and w) == 800 and (height and h) == 480 then			--X20 series et mode plein écran
+		widget.validLayout = true
+		widget.screen = {150, h/2, 60, 35, 370, 130, 50, 15, true, 150, 200, 800, 480, FONT_STD, FONT_XXL, FONT_XL, 10, 440, 90, 350, 100, 440}
+		
+	elseif (width and w ) == 480 and (height and h) == 320 then		--X18 series et mode plein écran
+		widget.validLayout = true	
+		widget.screen = {100, h/2, 45, 25, 250, 100, 25, 10, true, 80, 120, 480, 320, FONT_STD, FONT_XXL, FONT_STD, 10, 300, 50, 250, 50, 300}
+		
+	elseif (width and w ) == 640 and (height and h) == 360 then		--X14 series et mode plein écran
+		widget.validLayout = true
+		widget.screen = {100, h/2, 45, 25, 280, 100, 40, 14, true, 120, 120, 640, 360, FONT_STD, FONT_XL, FONT_STD, 10, 330, 50, 270, 60, 330}
+
+	elseif (width and w ) == 480 and (height and h) == 372 then		--X10 / X12 series et mode plein écran
+		widget.validLayout = true
+		-- widget.screen = {150, h/2, 60, 35, 370, 130, 50, 15, true, 150, 200, 480, 372, FONT_STD, FONT_XXL, FONT_XL, 10, 440, 90, 350, 100, 440}
+
 	else
-		lcd.font(FONT_STD)
-		lcd.drawText(width/2, height/2, localize("wrongLayout"), CENTERED)					--Message "Désactiver le titre"
-	end
-end
+		widget.validLayout = false
+	end	  
+end	
 
 ------------------------------------------------------------------------------------------
 -- Calcul du pourcentage de la batterie en fonction de la tension et du nombre d'Eléments
@@ -79,7 +87,6 @@ local function getPercentLipo(lipoVoltage,nbCells)
 	local array = {0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,7,7,7,7,7,7,8,8,8,8,8,8,9,9,9,9,9,9,10,11,12,13,14,15,16,17,18,19,20,22,24,26,28,30,32,35,38,40,42,45,48,50,52,55,58,60,62,64,66,68,70,72,74,76,78,80,81,82,83,84,85,85,86,86,87,88,89,89,90,91,92,93,94,95,96,97,98,99,100}
 	-- Tableau FrSky
 	--local array	= {0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,7,7,7,8,9,10,11,12,13,14,15,18,19,20,21,22,23,24,25,26,27,28,31,32,34,36,39,42,45,49,52,55,57,59,62,63,65,68,72,74,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100}
-	
 	if nbCells > 0 then
 		local voltCell = (lipoVoltage * 100) / nbCells
 		local delta = math.floor(voltCell - 300)
@@ -96,7 +103,7 @@ local function getPercentColor(percent)
        green = math.floor(0xDF * percent / 100)
        red = 0xDF - green
        return red, green, 0
- end
+end
 
 ------------------------------------------------------------------------------------------
 -- Affichage de la jauge annulaire en fonction des paramètres
@@ -105,98 +112,128 @@ local function drawGauge(center_x, center_y, radius, thickness, anglePercent, pe
 	lcd.color(lcd.RGB(getPercentColor(percent)))
 	lcd.drawAnnulusSector(center_x, center_y, radius, radius + thickness, 0, anglePercent)
 	lcd.color(widget.colorText)
-	lcd.drawCircle(center_x, center_y, radius)
-	
-	-- Affiche % dans le cercle si TRUE sinon la tension
+	lcd.drawCircle(center_x, center_y, radius)	
+		-- Affiche % dans le cercle si TRUE sinon la tension
 	if displayPercent then
-		lcd.font(field[widget.screen][15])
-		lcd.drawText(center_x+3, center_y-10, percent.."%", CENTERED)
+		lcd.font(widget.screen[15])
+		lcd.drawNumber(center_x-radius+5, center_y-(radius/2)+5, percent, UNIT_PERCENT, 0)
 	else
-		lcd.font(field[widget.screen][16])
-		lcd.drawText(center_x+3, center_y-7, voltage, CENTERED)	
+		lcd.font(widget.screen[16])
+		lcd.drawNumber(center_x-radius+5, center_y-(radius/2)+5, voltage, UNIT_VOLT, 2)	
 	end
 end
 
 local function paint(widget)
-	widget.screen = getScreenSize()
-	if widget.value ~= nil then 
-		--local percentLipo = getPercentLipo(24.9,6)											-- Pour les tests
-		local percentLipo = getPercentLipo(widget.value:value(),widget.value:value(OPTION_CELL_COUNT))
+	-- local checkTelemetry = system.getSource({category = SYSTEM_TELEMETRY_ACTIVE})
+	if widget.validLayout == true then
+		-- if widget.sensor ~= nil and widget.sensor:value() ~= nil then
+		if widget.sensor ~= nil and checkTelemetry:state() == true then
+			local cellsCount = widget.sensor:value({options=OPTION_CELLS_COUNT})
+			if cellsCount then
+				-- local percentLipo = getPercentLipo(25.2,6)		-- Pour les tests
+				local percentLipo = getPercentLipo(widget.sensor:value(),widget.sensor:value({options=OPTION_CELL_COUNT}))
+					-- Calcul de la valeur angulaire en fonction du pourcentage
+				local angleLipo = math.floor(percentLipo / 100 * 360)
+			
+					-- Affichage Jauge Tension Lipo
+				drawGauge(widget.screen[1], widget.screen[2] , widget.screen[3], widget.screen[4], angleLipo, percentLipo, true, widget.sensor:stringValue(), widget)
+					-- Affichage nombre d'éléments LIPO
+				lcd.font(widget.screen[14])		-- Taille de la police fontNbCell
+				lcd.drawText(widget.screen[21], widget.screen[22] , widget.sensor:stringValue({options=OPTION_CELLS_COUNT})..localize("cells"))
+					-- Affichage du nom du capteur Lipo
+				lcd.drawText(widget.screen[17],widget.screen[18],widget.sensor:name())
+					-- Affichage de la Tension globale du Lipo avec une couleur en fonction de la tension
+				lcd.font(widget.screen[15])	
+				lcd.color(lcd.RGB(getPercentColor(percentLipo)))
+				lcd.drawText(widget.screen[19], widget.screen[20], widget.sensor:stringValue())
 		
-		-- Calcul de la valeur angulaire en fonction du pourcentage
-		local angleLipo = math.floor(percentLipo/100*360)
-		
-		-- Affichage Jauge Tension Lipo
-		drawGauge(field[widget.screen][1], field[widget.screen][2] , field[widget.screen][3],field[widget.screen][4], angleLipo, percentLipo, true, widget.value:stringValue(), widget)
-		
-		-- Affichage nombre d'éléments LIPO
-		local xText = field[widget.screen][1] + field[widget.screen][3] + field[widget.screen][4] + 5
-		local yText = field[widget.screen][2]
-		lcd.font(field[widget.screen][14])														-- Taille de la police fontNbCell
-		lcd.drawText(xText, yText-30 , widget.value:stringValue(OPTION_CELL_COUNT)..localize("cells"))
-		-- Affichage du nom du capteur Lipo
-		lcd.drawText(field[widget.screen][17],field[widget.screen][18],widget.value:name())
-		
-		-- Affichage de la Tension globale du Lipo avec une couleur en fonction de la tension
-		lcd.font(field[widget.screen][15])	
-		lcd.color(lcd.RGB(getPercentColor(percentLipo)))
-		lcd.drawText(xText, yText, widget.value:stringValue())									-- Valeur de la Tension du Lipo
-		
-		if field[widget.screen][9] == true then													-- Affichage des éléments ?
-			-- Affichage des jauges Tension par éléments
-			local xCell = field[widget.screen][5]												-- X de la première jauge Cell
-			local yCell = field[widget.screen][6]												-- Y de la première jauge Cell
-															
-			for cell = 1, widget.value:value(OPTION_CELL_COUNT) do
-				--local percentCell = getPercentLipo(3.86,1)									-- Pour les tests
-				local percentCell = getPercentLipo(widget.value:value(OPTION_CELL_INDEX(cell)),1)
-				local angleCell = percentCell/100*360			
-				if xCell >= field[widget.screen][12] then 										-- Comparaison avec la largeur de l'écran pour passer à la ligne
-					xCell = field[widget.screen][5]												-- On test si la position de X est supérieur à la largeur de l'écran
-					yCell = yCell + field[widget.screen][11] 									-- On décale de DyCell vers le bas pour une deuxième ligne
-				end
-				drawGauge(xCell, yCell, field[widget.screen][7],field[widget.screen][8], angleCell, percentCell, false, widget.value:stringValue(OPTION_CELL_INDEX(cell)),widget)
-				xCell = xCell + field[widget.screen][10] 										-- Sinon on décale de DxCell vers la droite
-			end	
-		end		
+			-- if widget.screen[9] == true then													-- Affichage des éléments ?
+				-- Affichage des jauges Tension par éléments
+				xCell = widget.screen[5]												-- X de la première jauge Cell
+				yCell = widget.screen[6]												-- Y de la première jauge Cell				
+				for i = 1, cellsCount do
+					-- local percentCell = getPercentLipo(4.20,1)				-- Pour les tests
+					local percentCell = getPercentLipo(widget.sensor:value({options=OPTION_CELL_INDEX(i)}), 1)
+					local angleCell = percentCell/100*360				
+					if xCell >= widget.screen[12] then 										-- Comparaison avec la largeur de l'écran pour passer à la ligne
+						xCell = widget.screen[5]												-- On test si la position de X est supérieur à la largeur de l'écran
+						yCell = yCell + widget.screen[11] 									-- On décale de DyCell vers le bas pour une deuxième ligne
+					end
+					drawGauge(xCell, yCell, widget.screen[7],widget.screen[8], angleCell, percentCell, false, widget.sensor:value({options=OPTION_CELL_INDEX(i)}),widget)
+					xCell = xCell + widget.screen[10] 										-- Sinon on décale de DxCell vers la droite
+				end	
+			-- end
+			end
+			
+		elseif widget.sensor ~= nil then
+			lcd.font(FONT_XL)
+			lcd.color(RED)
+			local textSize=lcd.getTextSize(localize("noData"))
+			lcd.drawText((w/2-(textSize/2)),h/2,localize("noData"))
+		else 
+			lcd.font(FONT_XL)
+			lcd.color(RED)
+			local textSize=lcd.getTextSize(localize("noSensor"))
+			lcd.drawText((w/2-(textSize/2)),h/2,localize("noSensor"))
+		end
 	else
-		lcd.drawText(field[widget.screen][17],field[widget.screen][18], localize("noSensor"), LEFT)		-- Message "pas de FLVSS"
+		lcd.font(FONT_XL)
+		lcd.color(RED)
+		local textSize=lcd.getTextSize(localize("layout"))
+		lcd.drawText((w/2-(textSize/2)),h/2,localize("layout"))
 	end
 end
 
 local function wakeup(widget)
-	local sensor = system.getSource(widget.lipoSensor:name())
-	local newValue = nil
-	if sensor~=nil then
-		newValue = sensor
-	end
-	if widget.value ~= newValue then 
-		widget.value = newValue
+	
+	checkTelemetry = system.getSource({category = SYSTEM_TELEMETRY_ACTIVE})
+	
+	if widget.validLayout == true then	
+		local newValue
+		if widget.sensor == nil then
+			widget.sensor = system.getSource(widget.source:name())
+		end
+
+		if widget.sensor ~= nil then
+			newValue = widget.sensor:value()
+		end
+		if widget.value ~= newValue then 
+			widget.value = newValue
+			-- lcd.invalidate()
+		end	
 		lcd.invalidate()
+		
 	end	
 end
 
 local function configure(widget)
 	-- Color choice
-	line = form.addLine(localize("colorText"))
-	form.addColorField(line, nil, function() return widget.colorText end, function(value) widget.colorText = value end); 
+	line = form.addLine(localize("textColor"))
+	form.addColorField(line, nil, function() return widget.colorText end, function(newValue) widget.colorText = newValue end); 
 	-- Source choice
-    line = form.addLine(localize("lipoSensor"))
-    form.addSourceField(line, nil, function() return widget.lipoSensor end, function(value) widget.lipoSensor = value end)
+    line = form.addLine(localize("Name"))
+    form.addSourceField(line, nil, function() return widget.source end, function(newValue) widget.source = newValue end);
+end
+
+local function setDefaults(widget)
+   	if widget.colorText == nil then widget.colorText = lcd.RGB(0xE0, 0xE4, 0xE0) end 
+	if widget.source == nil then widget.source = ("Lipo") end
 end
 
 local function read(widget)
 	widget.colorText = storage.read("colorText")
-	widget.lipoSensor = storage.read("lipoSensor")
+	widget.source = storage.read("source")
+	
+	setDefaults(widget)
 end
 
 local function write(widget)
 	storage.write("colorText", widget.colorText)
-	storage.write("lipoSensor" ,widget.lipoSensor)
+	storage.write("source" ,widget.source)
 end
 
 local function init()
-	system.registerWidget({key="flvss",name=name, title=false, create=create, paint=paint, configure=configure, wakeup=wakeup, menu=menu, read=read, write=write})
+	system.registerWidget({key="flvss",name=name, create=create, title=false, paint=paint, build=build, configure=configure, wakeup=wakeup, menu=menu, read=read, write=write})
 end
 
 return{init=init}
