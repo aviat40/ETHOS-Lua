@@ -124,9 +124,7 @@ local function drawGauge(center_x, center_y, radius, thickness, anglePercent, pe
 end
 
 local function paint(widget)
-	-- local checkTelemetry = system.getSource({category = SYSTEM_TELEMETRY_ACTIVE})
 	if widget.validLayout == true then
-		-- if widget.sensor ~= nil and widget.sensor:value() ~= nil then
 		if widget.sensor ~= nil and checkTelemetry:state() == true then
 			local cellsCount = widget.sensor:value({options=OPTION_CELLS_COUNT})
 			if cellsCount then
@@ -197,11 +195,18 @@ local function wakeup(widget)
 		if widget.sensor ~= nil then
 			newValue = widget.sensor:value()
 		end
-		if widget.value ~= newValue then 
-			widget.value = newValue
-			-- lcd.invalidate()
+		
+		newTelemState = checkTelemetry:state()
+		if newTelemState and not previousTelemState then
+    		changeState = true
 		end	
-		lcd.invalidate()
+		previousTelemState = newTelemState 
+		
+        if widget.value ~= newValue or changeState == true then 
+			widget.value = newValue
+			lcd.invalidate()
+		end	
+		-- lcd.invalidate()
 		
 	end	
 end
