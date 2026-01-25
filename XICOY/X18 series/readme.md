@@ -1,1 +1,3 @@
+XICOY TELEX or XICOY HUBPRO widget LUA for ETHOS
+RADIO X18 series
 
